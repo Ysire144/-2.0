@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>무작위 mp3 재생기</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('back2.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .container {
+            text-align: center;
+            position: relative; /* 부모 컨테이너 기준으로 자식 요소 위치 설정 */
+        }
+        #title {
+            font-size: 3rem; /* 큰 글씨 크기 설정 */
+            color: white; /* 흰색 글씨 */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* 텍스트에 그림자 추가 */
+            margin-bottom: 20px;
+        }
+        #clickableImage {
+            width: 300px;
+            cursor: pointer;
+        }
+        #audioPlayer {
+            display: none; /* 오디오 플레이어 숨김 */
+        }
+        .blood {
+            position: absolute;
+            width: 800px; /* 크기 4배 확대 (200px * 4) */
+            height: 800px;
+            opacity: 0.7; /* 투명도 70% 설정 */
+            pointer-events: none; /* 이미지가 클릭되지 않도록 설정 */
+        }
+        .red-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.75); /* 붉은색 암전 (투명도 75%) */
+            display: none;
+            pointer-events: none; /* 클릭 차단 */
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 큰 글씨 제목 -->
+        <div id="title">콜레이 피격음 재생기</div>
+        <!-- 클릭 가능한 이미지 -->
+        <img id="clickableImage" src="스크린샷 2024-11-10 004059.png" alt="클릭해서 무작위 mp3 재생">
+        <audio id="audioPlayer" controls></audio> <!-- 오디오 재생기 -->
+        <div id="redOverlay" class="red-overlay"></div> <!-- 붉은색 암전 오버레이 -->
+    </div>
+    <script>
+        let clickCount = 0; // 초기 카운트 설정
+        const maxClicks = 12;
+        const mp3Files = [
+            '1000100_01_kr.mp3',
+            '1000100_03_kr.mp3',
+            '1000100_04_kr.mp3',
+            '1000100_05_kr.mp3',
+            '1000100_06_kr.mp3',
+            '1000101_01_kr.mp3',
+            '1000101_02_kr.mp3',
+            '1000101_03_kr.mp3',
+            '1000101_04_kr.mp3',
+            '1000101_05_kr.mp3',
+            '1000101_06_kr.mp3'
+        ];
+        const deathSounds = ['콜레이사망1.mp3', '콜레이사망2.mp3', '콜레이사망3.mp3'];
+
+        const clickableImage = document.getElementById('clickableImage');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const redOverlay = document.getElementById('redOverlay');
+
+        clickableImage.addEventListener('click', () => {
+            if (redOverlay.style.display === 'block') return; // 암전 상태일 때 동작 차단
+
+            // 무작위로 mp3 파일 선택
+            const randomIndex = Math.floor(Math.random() * mp3Files.length);
+            const selectedMp3 = mp3Files[randomIndex];
+
+            // 카운트 증가
+            if (!audioPlayer.paused) {
+                clickCount++;
+            }
+
+            // 카운트가 12에 도달하면 붉은색 암전 및 특정 mp3 재생
+            if (clickCount >= maxClicks) {
+                redOverlay.style.display = 'block'; // 붉은색 암전
+                const randomDeathSound = deathSounds[Math.floor(Math.random() * deathSounds.length)];
+                audioPlayer.src = randomDeathSound;
+                audioPlayer.play().catch(error => {
+                    console.error('사망 오디오 재생에 실패했습니다:', error);
+                });
+                return; // 이후 코드 실행 차단
+            }
+
+            // 오디오 재생 설정
+            audioPlayer.src = selectedMp3;
+            audioPlayer.play().catch(error => {
+                console.error('오디오 재생에 실패했습니다:', error);
+            });
+
+            // 'blood' 이미지 생성 및 표시
+            const bloodImage = document.createElement('img');
+            bloodImage.src = 'blood.png'; // 'blood' 이미지 경로
+            bloodImage.className = 'blood';
+
+            // 무작위 위치 설정 (화면 전체 기준으로)
+            const maxX = window.innerWidth - 800; // 800px 크기 기준
+            const maxY = window.innerHeight - 800;
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+            bloodImage.style.left = `${randomX}px`;
+            bloodImage.style.top = `${randomY}px`;
+
+            // 무작위 회전 각도 설정
+            const randomRotation = Math.floor(Math.random() * 360); // 0도에서 359도 사이 무작위 각도
+            bloodImage.style.transform = `rotate(${randomRotation}deg)`;
+
+            // 이미지 부모 요소에 추가
+            document.body.appendChild(bloodImage);
+
+            // 0.5초 후 이미지 제거
+            setTimeout(() => {
+                bloodImage.remove();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
